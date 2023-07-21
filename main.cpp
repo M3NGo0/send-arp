@@ -18,6 +18,29 @@ void usage() {
     printf("sample: send-arp-test wlan0 192.168.10.2 192.168.10.1\n");
 }
 
+void request_arp_packet(pcap_t* handle, Ip sip, char* memac, char* meip){
+    EthArpPacket packet;
+
+    packet.eth_.dmac_ = Mac("FF:FF:FF:FF:FF:FF");   
+    packet.eth_.smac_ = Mac(memac);                      
+    packet.eth_.type_ = htons(EthHdr::Arp);
+
+    packet.arp_.hrd_ = htons(ArpHdr::ETHER);
+    packet.arp_.pro_ = htons(EthHdr::Ip4);
+    packet.arp_.hln_ = Mac::SIZE;
+    packet.arp_.pln_ = Ip::SIZE;
+    packet.arp_.op_ = htons(ArpHdr::Request);
+    packet.arp_.smac_ = Mac(memac);   
+    packet.arp_.sip_ = htonl(Ip(meip));             
+    packet.arp_.tmac_ = Mac("00:00:00:00:00:00");  
+    packet.arp_.tip_ = htonl(Ip(sip));              
+
+    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
+    if (res != 0) {
+        fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
+    }
+}
+
 Mac get_sendmac(pcap_t* handle, Ip sip, char* memac, char* meip){
     request_arp_packet(handle, sip, memac, meip);
     while(1){
@@ -42,28 +65,7 @@ Mac get_sendmac(pcap_t* handle, Ip sip, char* memac, char* meip){
     return NULL;
 }
 
-void request_arp_packet(pcap_t* handle, Ip sip, char* memac, char* meip){
-    EthArpPacket packet;
 
-    packet.eth_.dmac_ = Mac("FF:FF:FF:FF:FF:FF");   
-    packet.eth_.smac_ = Mac(memac);                      
-    packet.eth_.type_ = htons(EthHdr::Arp);
-
-    packet.arp_.hrd_ = htons(ArpHdr::ETHER);
-    packet.arp_.pro_ = htons(EthHdr::Ip4);
-    packet.arp_.hln_ = Mac::SIZE;
-    packet.arp_.pln_ = Ip::SIZE;
-    packet.arp_.op_ = htons(ArpHdr::Request);
-    packet.arp_.smac_ = Mac(memac);   
-    packet.arp_.sip_ = htonl(Ip(meip));             
-    packet.arp_.tmac_ = Mac("00:00:00:00:00:00");  
-    packet.arp_.tip_ = htonl(Ip(sip));              
-
-    int res = pcap_sendpacket(handle, reinterpret_cast<const u_char*>(&packet), sizeof(EthArpPacket));
-    if (res != 0) {
-        fprintf(stderr, "pcap_sendpacket return %d error=%s\n", res, pcap_geterr(handle));
-    }
-}
 
 
 void reply_arp_packet(pcap_t* handle, Ip sip, Ip tip, char* memac, Mac smac){
