@@ -65,30 +65,6 @@ void request_arp_packet(pcap_t* handle, Ip sip, char* memac, char* meip){
     }
 }
 
-void GetInterfaceMacAddress(char* interface, unsigned char* mac) 
-{
-    struct ifreq ifrq;
-    struct sockaddr_in *addr;
-    int fd = socket(AF_INET, SOCK_DGRAM, IPPROTO_IP);
-    strncpy(ifrq.ifr_name, argv[1], IFNAMSIZ);
-
-    if (0 > ioctl(fd, SIOCGIFHWADDR, &ifrq)) {
-        printf("Error in mac addr\n");
-    }
-    memcpy(me_mac, ifrq.ifr_hwaddr.sa_data, 6);
-
-    if (0 > ioctl(fd, SIOCGIFADDR, &ifrq)) {
-        printf("Error get my ip address\n");
-    }
-    addr = (struct sockaddr_in*)&ifrq.ifr_addr;
-    meip = inet_ntoa(addr->sin_addr);
-
-    sprintf(memac, "%02x:%02x:%02x:%02x:%02x:%02x",
-           me_mac[0], me_mac[1], me_mac[2], me_mac[3],me_mac[4], me_mac[5]);
-
-    close(fd);
-}
-
 
 void reply_arp_packet(pcap_t* handle, Ip sip, Ip tip, char* memac, Mac smac){
     EthArpPacket packet;
