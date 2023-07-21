@@ -116,7 +116,7 @@ void reply_arp_packet(pcap_t* handle, Ip sip, Ip tip, char* memac, Mac smac){
 
 
 int main(int argc, char* argv[]) {
-    if (argc < 4 || argc % 2 != 0) {
+    if (argc == 0 || argc % 2 != 0) {
         usage();
         return -1;
     }
